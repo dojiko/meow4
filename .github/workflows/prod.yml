@@ -1,0 +1,38 @@
+---
+name: build_and_deploy
+jobs:
+  build:
+    container:
+      image: docker:git
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: script
+      run: |-
+        if [[ ${GITHUB_REF##*/} == 'master' ]]; then
+            IMAGE_TAG=$GITHUB_SHA # git SHA for staging/production deployments
+        else
+            IMAGE_TAG=${GITHUB_REF##*/} # branch name for dev usecases
+        fi
+        
+        echo "IMAGE_TAG=$IMAGE_TAG"
+        echo "GITHUB_SHA=$GITHUB_SHA"
+        echo "GITHUB_REF=$GITHUB_REF"
+
+  deploy-production:
+    container:
+      image: degica/rails-buildpack:2.6.5-stretch
+    runs-on: ubuntu-18.04
+    needs: [build]
+    if: ${{ github.ref == 'refs/heads/production' }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: script
+      run: |-
+        echo "IMAGE_TAG=$IMAGE_TAG"
+        echo "GITHUB_SHA=$GITHUB_SHA"
+        echo "GITHUB_REF=$GITHUB_REF"
+'on':
+  push:
+    branches:
+    - '*'

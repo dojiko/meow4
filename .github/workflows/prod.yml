@@ -27,6 +27,8 @@ jobs:
     if: ${{ github.ref == 'refs/heads/production' }}
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: script
       run: |-
         TAG=$(git merge-base origin/master $GITHUB_SHA)
